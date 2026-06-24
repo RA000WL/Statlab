@@ -92,22 +92,15 @@
     });
 
     document.getElementById('sidebar-collapse').addEventListener('click', function() {
-      var sidebar = document.getElementById('sidebar');
-      var btn = this;
-      sidebar.classList.toggle('collapsed');
-      if (sidebar.classList.contains('collapsed')) {
-        btn.textContent = '▶';
-        localStorage.setItem('statlab-sidebar', 'collapsed');
-      } else {
-        btn.textContent = '◀';
-        localStorage.setItem('statlab-sidebar', 'expanded');
-      }
+      document.body.classList.toggle('sidebar-collapsed');
+      var collapsed = document.body.classList.contains('sidebar-collapsed');
+      this.textContent = collapsed ? '▶' : '◀';
+      localStorage.setItem('statlab-sidebar', collapsed ? 'collapsed' : 'expanded');
     });
 
     (function() {
-      var savedSidebar = localStorage.getItem('statlab-sidebar');
-      if (savedSidebar === 'collapsed') {
-        document.getElementById('sidebar').classList.add('collapsed');
+      if (localStorage.getItem('statlab-sidebar') === 'collapsed') {
+        document.body.classList.add('sidebar-collapsed');
         document.getElementById('sidebar-collapse').textContent = '▶';
       }
     })();

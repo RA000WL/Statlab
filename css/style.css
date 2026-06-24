@@ -139,23 +139,24 @@ body {
   color: white;
 }
 
-.sidebar.collapsed + .sidebar-collapse-btn {
-  left: 0;
+body.sidebar-collapsed .sidebar-collapse-btn {
+  left: 14px;
 }
 
-.sidebar.collapsed {
+body.sidebar-collapsed .sidebar {
   width: 0;
   overflow: hidden;
 }
 
-.sidebar.collapsed .sidebar-header,
-.sidebar.collapsed .sidebar-nav,
-.sidebar.collapsed .variable-list {
+body.sidebar-collapsed .sidebar .sidebar-header,
+body.sidebar-collapsed .sidebar .sidebar-nav,
+body.sidebar-collapsed .sidebar .variable-list {
   display: none;
 }
 
-.sidebar.collapsed + .sidebar-collapse-btn + .main-content {
+body.sidebar-collapsed .main-content {
   margin-left: 0;
+  padding-left: 3rem;
 }
 
 .sidebar-nav {
