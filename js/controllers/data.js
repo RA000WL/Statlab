@@ -11,19 +11,23 @@ const DataController = {
         <h2>Data</h2>
         ${hasData ? `
           <div class="card" style="margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
               <div>
                 <span class="text-muted">Current dataset:</span>
                 <strong>${state.rawData.length} rows</strong> × <strong>${state.columns.length} columns</strong>
               </div>
-              <button class="btn btn-secondary" id="clear-data-btn" style="font-size: 0.8rem; padding: 0.375rem 0.75rem;">Clear Data</button>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary" id="save-csv-btn" style="font-size: 0.8rem; padding: 0.375rem 0.75rem;">Save CSV</button>
+                <button class="btn btn-secondary" id="clear-data-btn" style="font-size: 0.8rem; padding: 0.375rem 0.75rem;">Clear Data</button>
+              </div>
             </div>
           </div>
         ` : ''}
         <div class="card">
           <div class="tab-bar">
-            <button class="tab-btn ${!hasData ? 'active' : ''}" data-tab="upload">Upload File</button>
-            <button class="tab-btn ${!hasData ? '' : 'active'}" data-tab="create">Create Table</button>
+            <button class="tab-btn active" data-tab="upload">Upload File</button>
+            ${hasData ? `<button class="tab-btn" data-tab="edit">Edit Data</button>` : ''}
+            <button class="tab-btn" data-tab="create">Create Table</button>
           </div>
           <div id="data-tab-content"></div>
         </div>
@@ -34,6 +38,7 @@ const DataController = {
     if (hasData) {
       this.renderDataPreview(state.columns.map(c => c.name), state.rawData);
       this.renderVariableList();
+
       document.getElementById('clear-data-btn').addEventListener('click', () => {
         state.rawData = null;
         state.columns = [];
@@ -42,13 +47,13 @@ const DataController = {
         this.customColumns = [];
         this.renderForm();
       });
+
+      document.getElementById('save-csv-btn').addEventListener('click', () => {
+        this.exportCSV();
+      });
     }
 
-    if (hasData) {
-      this.renderCreateForm();
-    } else {
-      this.renderUploadForm();
-    }
+    this.renderUploadForm();
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -56,6 +61,8 @@ const DataController = {
         e.target.classList.add('active');
         if (e.target.dataset.tab === 'upload') {
           this.renderUploadForm();
+        } else if (e.target.dataset.tab === 'edit') {
+          this.renderEditForm();
         } else {
           this.renderCreateForm();
         }
@@ -78,6 +85,56 @@ const DataController = {
       </div>
     `;
     this.setupUploadListeners();
+  },
+
+  renderEditForm() {
+    const container = document.getElementById('data-tab-content');
+    if (!state.rawData || state.rawData.length === 0) {
+      container.innerHTML = '<p class="text-muted" style="padding: 1rem;">No data loaded. Upload a file or create a table first.</p>';
+      return;
+    }
+
+    const headers = state.columns.map(c => c.name);
+    container.innerHTML = `
+      <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+        <table class="data-table custom-editable-table" id="edit-table">
+          <thead>
+            <tr><th class="row-num-col">#</th>${headers.map((h, i) =>
+              `<th><input type="text" value="${h}" class="col-name-input edit-col-input" data-idx="${i}"></th>`
+            ).join('')}</tr>
+          </thead>
+          <tbody>
+            ${state.rawData.map((row, ri) => `
+              <tr><td class="row-num">${ri + 1}</td>${headers.map((h, ci) =>
+                `<td><input type="text" value="${row[h] !== undefined ? row[h] : ''}" class="cell-input edit-cell-input" data-row="${ri}" data-col="${ci}" data-header="${h}"></td>`
+              ).join('')}</tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    container.querySelectorAll('.edit-cell-input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const r = parseInt(e.target.dataset.row);
+        const h = e.target.dataset.header;
+        state.rawData[r][h] = e.target.value;
+      });
+    });
+
+    container.querySelectorAll('.edit-col-input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        const oldName = state.columns[idx].name;
+        const newName = e.target.value;
+        state.columns[idx].name = newName;
+        state.rawData.forEach(row => {
+          row[newName] = row[oldName];
+          delete row[oldName];
+        });
+        this.renderVariableList();
+      });
+    });
   },
 
   renderCreateForm() {
@@ -319,35 +376,27 @@ const DataController = {
     let tableHTML = `
       <div class="card fade-in" style="margin-top: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <h3 style="margin: 0;">Data Preview${totalRows > 20 ? ' (first 20 rows)' : ''}</h3>
-          <span class="text-muted" style="font-size: 0.8rem;">${totalRows} total rows</span>
+          <h3 style="margin: 0;">Data Preview</h3>
+          <span class="text-muted" style="font-size: 0.8rem;">${totalRows} rows × ${headers.length} columns</span>
         </div>
         <div class="table-wrapper">
-          <table class="data-table custom-editable-table">
+          <table class="data-table">
             <thead>
               <tr><th class="row-num-col">#</th>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
             </thead>
             <tbody>
               ${rows.map((row, ri) => `
-                <tr><td class="row-num">${ri + 1}</td>${headers.map((h, ci) =>
-                  `<td><input type="text" value="${row[h] !== undefined ? row[h] : ''}" class="cell-input data-cell-input" data-row="${ri}" data-col="${ci}" data-header="${h}"></td>`
+                <tr><td class="row-num">${ri + 1}</td>${headers.map(h =>
+                  `<td>${row[h] !== undefined ? row[h] : ''}</td>`
                 ).join('')}</tr>
               `).join('')}
             </tbody>
           </table>
         </div>
-        ${totalRows > 20 ? `<p class="text-muted" style="font-size: 0.8rem; margin-top: 0.75rem;">Showing 20 of ${totalRows} rows. Upload a new file or edit the remaining rows in your source.</p>` : ''}
+        <p class="text-muted" style="font-size: 0.8rem; margin-top: 0.75rem;">Go to <strong>Edit Data</strong> tab to modify values.</p>
       </div>
     `;
     preview.innerHTML = tableHTML;
-
-    preview.querySelectorAll('.data-cell-input').forEach(input => {
-      input.addEventListener('change', (e) => {
-        const r = parseInt(e.target.dataset.row);
-        const h = e.target.dataset.header;
-        state.rawData[r][h] = e.target.value;
-      });
-    });
   },
 
   renderVariableList() {
@@ -359,6 +408,28 @@ const DataController = {
         <span class="badge-name">${col.name}</span>
       </div>
     `).join('');
+  },
+
+  exportCSV() {
+    if (!state.rawData || state.rawData.length === 0) return;
+    const headers = state.columns.map(c => c.name);
+    const csvRows = [headers.join(',')];
+    state.rawData.forEach(row => {
+      const values = headers.map(h => {
+        const val = String(row[h] !== undefined ? row[h] : '');
+        return val.includes(',') || val.includes('"') || val.includes('\n')
+          ? '"' + val.replace(/"/g, '""') + '"' : val;
+      });
+      csvRows.push(values.join(','));
+    });
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'statlab_data.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   },
 
   showError(message) {
