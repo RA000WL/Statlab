@@ -578,15 +578,65 @@ h4 {
     grid-template-columns: 1fr;
   }
 
+  .table-wrapper {
+    -webkit-overflow-scrolling: touch;
+    margin: 0.5rem -1rem;
+    padding: 0 1rem;
+  }
+
   .data-table,
   .stats-table {
     font-size: 0.75rem;
+    min-width: 500px;
   }
 
-  .data-table th,
-  .stats-table th,
-  .data-table td,
-  .stats-table td {
-    padding: 0.375rem 0.5rem;
+  .card {
+    padding: 1rem;
+  }
+
+  .tab-bar {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-select,
+  .multi-select {
+    font-size: 16px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .upload-zone {
+    padding: 2rem 1rem;
+  }
+
+  .variable-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .variable-badge {
+    margin-bottom: 0;
+  }
+
+  .stat-card {
+    padding: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
   }
 }
