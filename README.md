@@ -1,6 +1,6 @@
 # StatLab
 
-A free, browser-based statistical analysis platform designed for undergraduate students and researchers. No installation, no server, no coding required — just open the link and start analyzing.
+A free, browser-based statistical analysis platform designed for students and researchers. No installation, no server, no coding required — just open the link and start analyzing.
 
 **Live:** https://ra000wl.github.io/Statlab/
 
