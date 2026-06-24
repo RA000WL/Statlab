@@ -20,6 +20,11 @@
     <div class="sidebar-header">
       <h1>StatLab</h1>
       <p>Statistical Analysis</p>
+      <div class="theme-toggle" id="theme-toggle">
+        <span class="theme-toggle-icon" id="theme-icon">🌙</span>
+        <span class="theme-toggle-switch"></span>
+        <span>Dark Mode</span>
+      </div>
     </div>
     <nav class="sidebar-nav" id="sidebar-nav"></nav>
     <div class="variable-list" id="variable-list">
@@ -55,6 +60,32 @@
       const btn = document.getElementById('mobile-menu-btn');
       if (!sidebar.contains(e.target) && !btn.contains(e.target)) {
         sidebar.classList.remove('open');
+      }
+    });
+
+    (function() {
+      var saved = localStorage.getItem('statlab-theme');
+      if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.getElementById('theme-icon').textContent = '☀️';
+        document.querySelector('#theme-toggle span:last-child').textContent = 'Light Mode';
+      }
+    })();
+
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var icon = document.getElementById('theme-icon');
+      var label = this.querySelector('span:last-child');
+      if (current === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        icon.textContent = '🌙';
+        label.textContent = 'Dark Mode';
+        localStorage.setItem('statlab-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        icon.textContent = '☀️';
+        label.textContent = 'Light Mode';
+        localStorage.setItem('statlab-theme', 'light');
       }
     });
   </script>

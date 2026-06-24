@@ -1,11 +1,26 @@
 const Charts = {
-  defaultLayout: {
-    paper_bgcolor: '#1e2433',
-    plot_bgcolor: '#1e2433',
-    font: { color: '#e2e8f0', family: 'DM Sans' },
-    margin: { l: 50, r: 20, t: 40, b: 50 },
-    xaxis: { gridcolor: '#2a3144', zerolinecolor: '#2a3144' },
-    yaxis: { gridcolor: '#2a3144', zerolinecolor: '#2a3144' }
+  getThemeColors() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    return {
+      paper_bgcolor: isLight ? '#ffffff' : '#1e2433',
+      plot_bgcolor: isLight ? '#f8fafc' : '#1e2433',
+      fontColor: isLight ? '#1e293b' : '#e2e8f0',
+      gridColor: isLight ? '#e2e8f0' : '#2a3144',
+      mainColor: isLight ? '#3b82f6' : '#4f8ef7',
+      dangerColor: isLight ? '#dc2626' : '#ef4444'
+    };
+  },
+
+  getDefaultLayout() {
+    const c = this.getThemeColors();
+    return {
+      paper_bgcolor: c.paper_bgcolor,
+      plot_bgcolor: c.plot_bgcolor,
+      font: { color: c.fontColor, family: 'DM Sans' },
+      margin: { l: 50, r: 20, t: 40, b: 50 },
+      xaxis: { gridcolor: c.gridColor, zerolinecolor: c.gridColor },
+      yaxis: { gridcolor: c.gridColor, zerolinecolor: c.gridColor }
+    };
   },
 
   defaultConfig: {
@@ -14,130 +29,138 @@ const Charts = {
   },
 
   plotHistogram(divId, data, label) {
+    const c = this.getThemeColors();
     const trace = {
       x: data,
       type: 'histogram',
-      marker: { color: '#4f8ef7', line: { color: '#1e2433', width: 1 } },
+      marker: { color: c.mainColor, line: { color: c.paper_bgcolor, width: 1 } },
       opacity: 0.85
     };
     const layout = {
-      ...this.defaultLayout,
-      title: { text: `Distribution of ${label}`, font: { size: 14, color: '#e2e8f0' } },
-      xaxis: { ...this.defaultLayout.xaxis, title: label },
-      yaxis: { ...this.defaultLayout.yaxis, title: 'Frequency' }
+      ...this.getDefaultLayout(),
+      title: { text: `Distribution of ${label}`, font: { size: 14, color: c.fontColor } },
+      xaxis: { ...this.getDefaultLayout().xaxis, title: label },
+      yaxis: { ...this.getDefaultLayout().yaxis, title: 'Frequency' }
     };
     Plotly.newPlot(divId, [trace], layout, this.defaultConfig);
   },
 
   plotBoxplot(divId, data, labels) {
+    const c = this.getThemeColors();
     const trace = {
       y: data,
       type: 'box',
       name: labels || '',
-      marker: { color: '#4f8ef7' },
-      line: { color: '#e2e8f0' },
-      fillcolor: 'rgba(79, 142, 247, 0.2)'
+      marker: { color: c.mainColor },
+      line: { color: c.fontColor },
+      fillcolor: c.mainColor + '33'
     };
     const layout = {
-      ...this.defaultLayout,
-      title: { text: `Boxplot of ${labels}`, font: { size: 14, color: '#e2e8f0' } },
-      yaxis: { ...this.defaultLayout.yaxis, title: labels }
+      ...this.getDefaultLayout(),
+      title: { text: `Boxplot of ${labels}`, font: { size: 14, color: c.fontColor } },
+      yaxis: { ...this.getDefaultLayout().yaxis, title: labels }
     };
     Plotly.newPlot(divId, [trace], layout, this.defaultConfig);
   },
 
   plotGroupedBoxplot(divId, groups) {
+    const c = this.getThemeColors();
+    const colors = [c.mainColor, '#22c55e', c.dangerColor, '#f59e0b', '#8b5cf6'];
     const traces = groups.map((group, i) => ({
       y: group.data,
       type: 'box',
       name: group.label,
-      marker: { color: ['#4f8ef7', '#22c55e', '#ef4444', '#f59e0b', '#8b5cf6'][i % 5] },
-      line: { color: '#e2e8f0' },
-      fillcolor: ['rgba(79,142,247,0.2)', 'rgba(34,197,94,0.2)', 'rgba(239,68,68,0.2)', 'rgba(245,158,11,0.2)', 'rgba(139,92,246,0.2)'][i % 5]
+      marker: { color: colors[i % 5] },
+      line: { color: c.fontColor },
+      fillcolor: colors[i % 5] + '33'
     }));
     const layout = {
-      ...this.defaultLayout,
-      title: { text: 'Grouped Boxplot', font: { size: 14, color: '#e2e8f0' } },
+      ...this.getDefaultLayout(),
+      title: { text: 'Grouped Boxplot', font: { size: 14, color: c.fontColor } },
       showlegend: false
     };
     Plotly.newPlot(divId, traces, layout, this.defaultConfig);
   },
 
   plotBarChart(divId, labels, values) {
+    const c = this.getThemeColors();
     const trace = {
       x: labels,
       y: values,
       type: 'bar',
-      marker: { color: '#4f8ef7' },
+      marker: { color: c.mainColor },
       text: values.map(v => v.toFixed(1)),
       textposition: 'auto',
-      textfont: { color: '#e2e8f0' }
+      textfont: { color: c.fontColor }
     };
     const layout = {
-      ...this.defaultLayout,
-      title: { text: 'Frequency Distribution', font: { size: 14, color: '#e2e8f0' } },
-      xaxis: { ...this.defaultLayout.xaxis, title: 'Value' },
-      yaxis: { ...this.defaultLayout.yaxis, title: 'Count' }
+      ...this.getDefaultLayout(),
+      title: { text: 'Frequency Distribution', font: { size: 14, color: c.fontColor } },
+      xaxis: { ...this.getDefaultLayout().xaxis, title: 'Value' },
+      yaxis: { ...this.getDefaultLayout().yaxis, title: 'Count' }
     };
     Plotly.newPlot(divId, [trace], layout, this.defaultConfig);
   },
 
   plotPieChart(divId, labels, values) {
+    const c = this.getThemeColors();
     const trace = {
       labels: labels,
       values: values,
       type: 'pie',
       hole: 0.4,
       marker: {
-        colors: ['#4f8ef7', '#22c55e', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
+        colors: [c.mainColor, '#22c55e', c.dangerColor, '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
       },
       textinfo: 'label+percent',
-      textfont: { color: '#e2e8f0' }
+      textfont: { color: c.fontColor }
     };
     const layout = {
-      ...this.defaultLayout,
-      title: { text: 'Distribution', font: { size: 14, color: '#e2e8f0' } },
+      ...this.getDefaultLayout(),
+      title: { text: 'Distribution', font: { size: 14, color: c.fontColor } },
       showlegend: true,
-      legend: { font: { color: '#e2e8f0' } }
+      legend: { font: { color: c.fontColor } }
     };
     Plotly.newPlot(divId, [trace], layout, this.defaultConfig);
   },
 
   plotCorrelationMatrix(divId, matrix, labels) {
+    const c = this.getThemeColors();
     const trace = {
       z: matrix,
       x: labels,
       y: labels,
       type: 'heatmap',
       colorscale: [
-        [0, '#ef4444'],
+        [0, c.dangerColor],
         [0.5, '#ffffff'],
-        [1, '#4f8ef7']
+        [1, c.mainColor]
       ],
       zmin: -1,
       zmax: 1,
       text: matrix.map(row => row.map(v => v.toFixed(3))),
       texttemplate: '%{text}',
-      textfont: { color: '#0f1117' },
+      textfont: { color: c.paper_bgcolor },
       hoverongaps: false
     };
     const layout = {
-      ...this.defaultLayout,
-      title: { text: 'Correlation Matrix', font: { size: 14, color: '#e2e8f0' } },
-      xaxis: { ...this.defaultLayout.xaxis, tickangle: -45 },
-      yaxis: { ...this.defaultLayout.yaxis, autorange: 'reversed' },
+      ...this.getDefaultLayout(),
+      title: { text: 'Correlation Matrix', font: { size: 14, color: c.fontColor } },
+      xaxis: { ...this.getDefaultLayout().xaxis, tickangle: -45 },
+      yaxis: { ...this.getDefaultLayout().yaxis, autorange: 'reversed' },
       margin: { l: 80, r: 20, t: 40, b: 80 }
     };
     Plotly.newPlot(divId, [trace], layout, this.defaultConfig);
   },
 
   plotScatter(divId, x, y, xLabel, yLabel, regressionLine) {
+    const c = this.getThemeColors();
     const traces = [{
       x: x,
       y: y,
       mode: 'markers',
       type: 'scatter',
-      marker: { color: '#4f8ef7', size: 6, opacity: 0.7 },
+      marker: { color: c.mainColor, size: 6, opacity: 0.7 },
       name: 'Data'
     }];
     if (regressionLine) {
@@ -146,40 +169,42 @@ const Charts = {
         y: regressionLine.y,
         mode: 'lines',
         type: 'scatter',
-        line: { color: '#ef4444', width: 2 },
+        line: { color: c.dangerColor, width: 2 },
         name: 'Regression Line'
       });
     }
     const layout = {
-      ...this.defaultLayout,
-      title: { text: `${yLabel} vs ${xLabel}`, font: { size: 14, color: '#e2e8f0' } },
-      xaxis: { ...this.defaultLayout.xaxis, title: xLabel },
-      yaxis: { ...this.defaultLayout.yaxis, title: yLabel },
+      ...this.getDefaultLayout(),
+      title: { text: `${yLabel} vs ${xLabel}`, font: { size: 14, color: c.fontColor } },
+      xaxis: { ...this.getDefaultLayout().xaxis, title: xLabel },
+      yaxis: { ...this.getDefaultLayout().yaxis, title: yLabel },
       showlegend: regressionLine ? true : false,
-      legend: { font: { color: '#e2e8f0' } }
+      legend: { font: { color: c.fontColor } }
     };
     Plotly.newPlot(divId, traces, layout, this.defaultConfig);
   },
 
   plotStackedBar(divId, contingencyTable, rowLabels, colLabels) {
-    const traces = colLabels.map((col, c) => ({
+    const c = this.getThemeColors();
+    const traces = colLabels.map((col, i) => ({
       x: rowLabels,
-      y: contingencyTable.map(row => row[c]),
+      y: contingencyTable.map(row => row[i]),
       name: col,
       type: 'bar'
     }));
     const layout = {
-      ...this.defaultLayout,
-      title: { text: 'Contingency Table', font: { size: 14, color: '#e2e8f0' } },
+      ...this.getDefaultLayout(),
+      title: { text: 'Contingency Table', font: { size: 14, color: c.fontColor } },
       barmode: 'stack',
-      xaxis: { ...this.defaultLayout.xaxis },
-      yaxis: { ...this.defaultLayout.yaxis, title: 'Count' },
-      legend: { font: { color: '#e2e8f0' } }
+      xaxis: { ...this.getDefaultLayout().xaxis },
+      yaxis: { ...this.getDefaultLayout().yaxis, title: 'Count' },
+      legend: { font: { color: c.fontColor } }
     };
     Plotly.newPlot(divId, traces, layout, this.defaultConfig);
   },
 
   plotQQ(divId, data, label) {
+    const c = this.getThemeColors();
     const n = data.length;
     const sorted = [...data].sort((a, b) => a - b);
     const theoretical = [];
@@ -201,7 +226,7 @@ const Charts = {
         y: observed,
         mode: 'markers',
         type: 'scatter',
-        marker: { color: '#4f8ef7', size: 6, opacity: 0.7 },
+        marker: { color: c.mainColor, size: 6, opacity: 0.7 },
         name: 'Data'
       },
       {
@@ -209,17 +234,17 @@ const Charts = {
         y: lineY,
         mode: 'lines',
         type: 'scatter',
-        line: { color: '#ef4444', width: 2, dash: 'dash' },
+        line: { color: c.dangerColor, width: 2, dash: 'dash' },
         name: 'Normal'
       }
     ];
     const layout = {
-      ...this.defaultLayout,
-      title: { text: `Q-Q Plot: ${label}`, font: { size: 14, color: '#e2e8f0' } },
-      xaxis: { ...this.defaultLayout.xaxis, title: 'Theoretical Quantiles' },
-      yaxis: { ...this.defaultLayout.yaxis, title: 'Sample Quantiles' },
+      ...this.getDefaultLayout(),
+      title: { text: `Q-Q Plot: ${label}`, font: { size: 14, color: c.fontColor } },
+      xaxis: { ...this.getDefaultLayout().xaxis, title: 'Theoretical Quantiles' },
+      yaxis: { ...this.getDefaultLayout().yaxis, title: 'Sample Quantiles' },
       showlegend: true,
-      legend: { font: { color: '#e2e8f0' } }
+      legend: { font: { color: c.fontColor } }
     };
     Plotly.newPlot(divId, traces, layout, this.defaultConfig);
   },

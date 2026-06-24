@@ -12,6 +12,19 @@
   --sidebar-width: 240px;
 }
 
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --accent: #3b82f6;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #d97706;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -54,6 +67,50 @@ body {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 0.25rem;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.theme-toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.theme-toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--text);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+[data-theme="light"] .theme-toggle-switch {
+  background: var(--accent);
+}
+
+[data-theme="light"] .theme-toggle-switch::after {
+  transform: translateX(16px);
+}
+
+.theme-toggle-icon {
+  font-size: 0.875rem;
 }
 
 .sidebar-nav {
