@@ -314,25 +314,40 @@ const DataController = {
 
   renderDataPreview(headers, data) {
     const preview = document.getElementById('data-preview');
-    const rows = data.slice(0, 10);
+    const rows = data.slice(0, 20);
+    const totalRows = data.length;
     let tableHTML = `
       <div class="card fade-in" style="margin-top: 1.5rem;">
-        <h3>Data Preview (first 10 rows)</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h3 style="margin: 0;">Data Preview${totalRows > 20 ? ' (first 20 rows)' : ''}</h3>
+          <span class="text-muted" style="font-size: 0.8rem;">${totalRows} total rows</span>
+        </div>
         <div class="table-wrapper">
-          <table class="data-table">
+          <table class="data-table custom-editable-table">
             <thead>
-              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+              <tr><th class="row-num-col">#</th>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
             </thead>
             <tbody>
-              ${rows.map(row => `
-                <tr>${headers.map(h => `<td>${row[h] !== undefined ? row[h] : ''}</td>`).join('')}</tr>
+              ${rows.map((row, ri) => `
+                <tr><td class="row-num">${ri + 1}</td>${headers.map((h, ci) =>
+                  `<td><input type="text" value="${row[h] !== undefined ? row[h] : ''}" class="cell-input data-cell-input" data-row="${ri}" data-col="${ci}" data-header="${h}"></td>`
+                ).join('')}</tr>
               `).join('')}
             </tbody>
           </table>
         </div>
+        ${totalRows > 20 ? `<p class="text-muted" style="font-size: 0.8rem; margin-top: 0.75rem;">Showing 20 of ${totalRows} rows. Upload a new file or edit the remaining rows in your source.</p>` : ''}
       </div>
     `;
     preview.innerHTML = tableHTML;
+
+    preview.querySelectorAll('.data-cell-input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const r = parseInt(e.target.dataset.row);
+        const h = e.target.dataset.header;
+        state.rawData[r][h] = e.target.value;
+      });
+    });
   },
 
   renderVariableList() {
