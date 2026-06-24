@@ -4,13 +4,26 @@ const DataController = {
 
   renderForm() {
     const main = document.getElementById('main-content');
+    const hasData = state.rawData && state.rawData.length > 0;
+
     main.innerHTML = `
       <div class="fade-in">
         <h2>Data</h2>
+        ${hasData ? `
+          <div class="card" style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span class="text-muted">Current dataset:</span>
+                <strong>${state.rawData.length} rows</strong> × <strong>${state.columns.length} columns</strong>
+              </div>
+              <button class="btn btn-secondary" id="clear-data-btn" style="font-size: 0.8rem; padding: 0.375rem 0.75rem;">Clear Data</button>
+            </div>
+          </div>
+        ` : ''}
         <div class="card">
           <div class="tab-bar">
-            <button class="tab-btn active" data-tab="upload">Upload File</button>
-            <button class="tab-btn" data-tab="create">Create Table</button>
+            <button class="tab-btn ${!hasData ? 'active' : ''}" data-tab="upload">Upload File</button>
+            <button class="tab-btn ${!hasData ? '' : 'active'}" data-tab="create">Create Table</button>
           </div>
           <div id="data-tab-content"></div>
         </div>
@@ -18,7 +31,24 @@ const DataController = {
       </div>
     `;
 
-    this.renderUploadForm();
+    if (hasData) {
+      this.renderDataPreview(state.columns.map(c => c.name), state.rawData);
+      this.renderVariableList();
+      document.getElementById('clear-data-btn').addEventListener('click', () => {
+        state.rawData = null;
+        state.columns = [];
+        state.sessionResults = [];
+        this.customData = [];
+        this.customColumns = [];
+        this.renderForm();
+      });
+    }
+
+    if (hasData) {
+      this.renderCreateForm();
+    } else {
+      this.renderUploadForm();
+    }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
