@@ -120,7 +120,7 @@ const DataController = {
     body.innerHTML = this.customData.map((row, ri) =>
       `<tr><td class="row-num">${ri + 1}</td>${row.map((val, ci) =>
         `<td><input type="text" value="${val}" class="cell-input" data-row="${ri}" data-col="${ci}"></td>`
-      ).join('')}</tr>`
+      ).join('')}<td class="row-delete-cell"><button class="row-delete-btn" data-row="${ri}" title="Delete row">&times;</button></td></tr>`
     ).join('');
 
     header.querySelectorAll('.col-name-input').forEach(input => {
@@ -147,6 +147,18 @@ const DataController = {
         const r = parseInt(e.target.dataset.row);
         const c = parseInt(e.target.dataset.col);
         this.customData[r][c] = e.target.value;
+      });
+    });
+
+    body.querySelectorAll('.row-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.row);
+        if (this.customData.length <= 1) {
+          this.showError('Cannot delete the last row.');
+          return;
+        }
+        this.customData.splice(idx, 1);
+        this.renderCustomTable();
       });
     });
   },
