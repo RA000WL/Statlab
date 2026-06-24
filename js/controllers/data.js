@@ -57,9 +57,10 @@ const DataController = {
         <button class="btn btn-secondary" id="add-col-btn" style="margin-right: 0.5rem;">+ Add Column</button>
         <button class="btn btn-secondary" id="add-row-btn" style="margin-right: 0.5rem;">+ Add Row</button>
         <button class="btn btn-primary" id="load-custom-btn">Load Data</button>
+        <p class="text-muted" style="margin-top: 0.75rem; font-size: 0.8rem;">Click column headers to rename. Empty columns are ignored on load.</p>
       </div>
       <div id="custom-table-wrapper" style="overflow-x: auto;">
-        <table class="data-table" id="custom-table">
+        <table class="data-table custom-editable-table" id="custom-table">
           <thead><tr id="custom-header"></tr></thead>
           <tbody id="custom-body"></tbody>
         </table>
@@ -108,19 +109,36 @@ const DataController = {
     const header = document.getElementById('custom-header');
     const body = document.getElementById('custom-body');
 
-    header.innerHTML = this.customColumns.map((col, i) =>
-      `<th><input type="text" value="${col}" class="col-name-input" data-idx="${i}" style="background:transparent;border:none;color:var(--accent);font-weight:600;width:100%;font-family:inherit;"></th>`
-    ).join('');
+    header.innerHTML = '<th class="row-num-col">#</th>' +
+      this.customColumns.map((col, i) =>
+        `<th class="col-header-cell">
+          <input type="text" value="${col}" class="col-name-input" data-idx="${i}">
+          <button class="col-delete-btn" data-idx="${i}" title="Delete column">&times;</button>
+        </th>`
+      ).join('');
 
     body.innerHTML = this.customData.map((row, ri) =>
-      `<tr>${row.map((val, ci) =>
-        `<td><input type="text" value="${val}" class="cell-input" data-row="${ri}" data-col="${ci}" style="background:transparent;border:none;color:var(--text);width:100%;font-family:'DM Mono',monospace;font-size:0.8125rem;"></td>`
+      `<tr><td class="row-num">${ri + 1}</td>${row.map((val, ci) =>
+        `<td><input type="text" value="${val}" class="cell-input" data-row="${ri}" data-col="${ci}"></td>`
       ).join('')}</tr>`
     ).join('');
 
     header.querySelectorAll('.col-name-input').forEach(input => {
       input.addEventListener('change', (e) => {
         this.customColumns[parseInt(e.target.dataset.idx)] = e.target.value;
+      });
+    });
+
+    header.querySelectorAll('.col-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        if (this.customColumns.length <= 1) {
+          this.showError('Cannot delete the last column.');
+          return;
+        }
+        this.customColumns.splice(idx, 1);
+        this.customData.forEach(row => row.splice(idx, 1));
+        this.renderCustomTable();
       });
     });
 
