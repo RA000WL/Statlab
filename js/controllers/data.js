@@ -1,28 +1,153 @@
 const DataController = {
+  customData: [],
+  customColumns: [],
+
   renderForm() {
     const main = document.getElementById('main-content');
     main.innerHTML = `
       <div class="fade-in">
-        <h2>Data Upload</h2>
+        <h2>Data</h2>
         <div class="card">
-          <div class="upload-zone" id="upload-zone">
-            <div class="upload-icon">📊</div>
-            <p>Drag & drop your data file here</p>
-            <p class="text-muted">or</p>
-            <label class="btn btn-primary">
-              Choose File
-              <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
-            </label>
-            <p class="text-muted" style="margin-top: 1rem; font-size: 0.85rem;">Supports CSV and XLSX files</p>
+          <div class="tab-bar">
+            <button class="tab-btn active" data-tab="upload">Upload File</button>
+            <button class="tab-btn" data-tab="create">Create Table</button>
           </div>
+          <div id="data-tab-content"></div>
         </div>
         <div id="data-preview"></div>
       </div>
     `;
-    this.setupEventListeners();
+
+    this.renderUploadForm();
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        if (e.target.dataset.tab === 'upload') {
+          this.renderUploadForm();
+        } else {
+          this.renderCreateForm();
+        }
+      });
+    });
   },
 
-  setupEventListeners() {
+  renderUploadForm() {
+    const container = document.getElementById('data-tab-content');
+    container.innerHTML = `
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon">📊</div>
+        <p>Drag & drop your data file here</p>
+        <p class="text-muted">or</p>
+        <label class="btn btn-primary">
+          Choose File
+          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
+        </label>
+        <p class="text-muted" style="margin-top: 1rem; font-size: 0.85rem;">Supports CSV and XLSX files</p>
+      </div>
+    `;
+    this.setupUploadListeners();
+  },
+
+  renderCreateForm() {
+    const container = document.getElementById('data-tab-content');
+    container.innerHTML = `
+      <div style="margin-bottom: 1rem;">
+        <button class="btn btn-secondary" id="add-col-btn" style="margin-right: 0.5rem;">+ Add Column</button>
+        <button class="btn btn-secondary" id="add-row-btn" style="margin-right: 0.5rem;">+ Add Row</button>
+        <button class="btn btn-primary" id="load-custom-btn">Load Data</button>
+      </div>
+      <div id="custom-table-wrapper" style="overflow-x: auto;">
+        <table class="data-table" id="custom-table">
+          <thead><tr id="custom-header"></tr></thead>
+          <tbody id="custom-body"></tbody>
+        </table>
+      </div>
+    `;
+
+    if (this.customColumns.length === 0) {
+      this.customColumns = ['Column 1', 'Column 2'];
+      this.customData = [
+        ['', ''],
+        ['', ''],
+        ['', ''],
+        ['', ''],
+        ['', '']
+      ];
+    }
+
+    this.renderCustomTable();
+
+    document.getElementById('add-col-btn').addEventListener('click', () => {
+      this.customColumns.push(`Column ${this.customColumns.length + 1}`);
+      this.customData.forEach(row => row.push(''));
+      this.renderCustomTable();
+    });
+
+    document.getElementById('add-row-btn').addEventListener('click', () => {
+      this.customData.push(new Array(this.customColumns.length).fill(''));
+      this.renderCustomTable();
+    });
+
+    document.getElementById('load-custom-btn').addEventListener('click', () => {
+      this.collectCustomData();
+      if (this.customData.length === 0 || this.customColumns.length === 0) {
+        this.showError('Table is empty.');
+        return;
+      }
+      this.processData(this.customColumns, this.customData.map(row => {
+        const obj = {};
+        this.customColumns.forEach((c, i) => { obj[c] = row[i]; });
+        return obj;
+      }), 'Custom Table');
+    });
+  },
+
+  renderCustomTable() {
+    const header = document.getElementById('custom-header');
+    const body = document.getElementById('custom-body');
+
+    header.innerHTML = this.customColumns.map((col, i) =>
+      `<th><input type="text" value="${col}" class="col-name-input" data-idx="${i}" style="background:transparent;border:none;color:var(--accent);font-weight:600;width:100%;font-family:inherit;"></th>`
+    ).join('');
+
+    body.innerHTML = this.customData.map((row, ri) =>
+      `<tr>${row.map((val, ci) =>
+        `<td><input type="text" value="${val}" class="cell-input" data-row="${ri}" data-col="${ci}" style="background:transparent;border:none;color:var(--text);width:100%;font-family:'DM Mono',monospace;font-size:0.8125rem;"></td>`
+      ).join('')}</tr>`
+    ).join('');
+
+    header.querySelectorAll('.col-name-input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        this.customColumns[parseInt(e.target.dataset.idx)] = e.target.value;
+      });
+    });
+
+    body.querySelectorAll('.cell-input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const r = parseInt(e.target.dataset.row);
+        const c = parseInt(e.target.dataset.col);
+        this.customData[r][c] = e.target.value;
+      });
+    });
+  },
+
+  collectCustomData() {
+    const headerInputs = document.querySelectorAll('.col-name-input');
+    this.customColumns = Array.from(headerInputs).map(inp => inp.value || 'Untitled');
+
+    const cellInputs = document.querySelectorAll('.cell-input');
+    cellInputs.forEach(inp => {
+      const r = parseInt(inp.dataset.row);
+      const c = parseInt(inp.dataset.col);
+      this.customData[r][c] = inp.value;
+    });
+
+    this.customData = this.customData.filter(row => row.some(v => v.trim() !== ''));
+  },
+
+  setupUploadListeners() {
     const fileInput = document.getElementById('file-input');
     const uploadZone = document.getElementById('upload-zone');
 
