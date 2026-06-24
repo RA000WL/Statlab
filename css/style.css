@@ -50,6 +50,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  transition: width 0.3s ease;
 }
 
 .sidebar-header {
@@ -111,6 +112,52 @@ body {
 
 .theme-toggle-icon {
   font-size: 0.875rem;
+}
+
+.sidebar-collapse-btn {
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  z-index: 100;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-collapse-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-header,
+.sidebar.collapsed .sidebar-nav,
+.sidebar.collapsed .variable-list {
+  display: none;
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.sidebar-collapse-btn.collapsed-btn {
+  right: -40px;
+  background: var(--accent);
+  color: white;
 }
 
 .sidebar-nav {
@@ -211,6 +258,7 @@ body {
   margin-left: var(--sidebar-width);
   padding: 2rem;
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
 }
 
 h2 {

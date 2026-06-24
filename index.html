@@ -17,6 +17,7 @@
   <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
 
   <aside class="sidebar" id="sidebar">
+    <button class="sidebar-collapse-btn" id="sidebar-collapse" title="Toggle sidebar">◀</button>
     <div class="sidebar-header">
       <h1>StatLab</h1>
       <p>Statistical Analysis</p>
@@ -88,6 +89,31 @@
         localStorage.setItem('statlab-theme', 'light');
       }
     });
+
+    document.getElementById('sidebar-collapse').addEventListener('click', function() {
+      var sidebar = document.getElementById('sidebar');
+      var btn = this;
+      sidebar.classList.toggle('collapsed');
+      if (sidebar.classList.contains('collapsed')) {
+        btn.textContent = '▶';
+        btn.classList.add('collapsed-btn');
+        localStorage.setItem('statlab-sidebar', 'collapsed');
+      } else {
+        btn.textContent = '◀';
+        btn.classList.remove('collapsed-btn');
+        localStorage.setItem('statlab-sidebar', 'expanded');
+      }
+    });
+
+    (function() {
+      var savedSidebar = localStorage.getItem('statlab-sidebar');
+      if (savedSidebar === 'collapsed') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        var collapseBtn = document.getElementById('sidebar-collapse');
+        collapseBtn.textContent = '▶';
+        collapseBtn.classList.add('collapsed-btn');
+      }
+    })();
   </script>
 </body>
 </html>
